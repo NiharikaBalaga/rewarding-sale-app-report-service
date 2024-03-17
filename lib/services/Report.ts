@@ -3,6 +3,8 @@ import type { Response } from 'express';
 import type { IReport } from '../DB/Models/Report';
 import ReportModel from '../DB/Models/Report';
 import { ReportStatus } from '../DB/Models/report-status.enum';
+import UserModel from '../DB/Models/User';
+import PostModel from '../DB/Models/Post';
 
 class ReportService {
 
@@ -38,6 +40,28 @@ class ReportService {
       if (existingReport) {
         return res.status(httpCodes.conflict).send({
           message: 'You can\'t report a post more than once.',
+          status: httpCodes.conflict
+        });
+      }
+
+      // Check if the user and/or post exists in db
+      const existingUser = await UserModel.findOne({ _id: reportObject.userId });
+      const existingPost = await PostModel.findOne({ _id: reportObject.postId });
+      if (!existingUser && !existingPost) {
+        return res.status(httpCodes.conflict).send({
+          message: 'The user and post doesn\'t exist in db, please check.',
+          status: httpCodes.conflict
+        });
+      }
+      if (!existingUser) {
+        return res.status(httpCodes.conflict).send({
+          message: 'The user doesn\'t exist in db, please check.',
+          status: httpCodes.conflict
+        });
+      }
+      if (!existingPost) {
+        return res.status(httpCodes.conflict).send({
+          message: 'The post doesn\'t exist in db, please check.',
           status: httpCodes.conflict
         });
       }
