@@ -28,7 +28,9 @@ const ReportSchema: mongoose.Schema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: Object.values(ReportTypes),
+    enum: ReportTypes,
+    index: true,
+    required: true
   },
 
 }, {

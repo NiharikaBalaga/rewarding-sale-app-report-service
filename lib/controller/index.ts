@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import type { IUser } from '../DB/Models/User';
 import { ReportService } from '../services/Report';
+import { ReportTypes } from '../DB/Models/report-types.enum';
 
 
 interface RequestValidatedByPassport extends Request {
@@ -18,16 +19,28 @@ interface RequestInterferedByIsBlocked extends RequestValidatedByPassport {
 }
 
 class ReportServiceController {
-
-  public static getReports(req: RequestInterferedByIsBlocked, res: Response) {
-    return ReportService.getReports(res);
+  public static getReportTypes(req: RequestInterferedByIsBlocked, res: Response) {
+    return res.send(Object.values(ReportTypes));
   }
 
-  public static createReport(req: RequestInterferedByIsBlocked, res: Response) {
-    const { matchedData } = req.body;
-    return ReportService.createReport(matchedData, res);
+  public static reportPost(req: RequestInterferedByIsBlocked, res: Response) {
+    const { matchedData: { postId, reportType } } = req.body;
+    const { currentUser }  = req;
+
+    return ReportService.reportPost(postId, reportType, currentUser, res);
   }
 
+  public static reportCount(req: RequestInterferedByIsBlocked, res: Response) {
+    const { matchedData: { postId } } = req.body;
+
+    return ReportService.getPostReportCounts(postId, res);
+  }
+
+  public static userPostReport(req: RequestInterferedByIsBlocked, res: Response) {
+    const { matchedData: { postId } } = req.body;
+    const { currentUser }  = req;
+    return ReportService.getUserPostReport(postId, currentUser, res);
+  }
 }
 
 export  {

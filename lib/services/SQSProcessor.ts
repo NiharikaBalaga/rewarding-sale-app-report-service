@@ -2,7 +2,7 @@ import { Events } from './events.enum';
 import { UserService } from './User';
 import { PostService } from './Post';
 import { PostDLLService } from './PostDLL';
-import { IPostDLL } from '../DB/Models/Post-DLL';
+import type { IPostDLL } from '../DB/Models/Post-DLL';
 import type { IPost } from '../DB/Models/Post';
 import type mongoose from 'mongoose';
 

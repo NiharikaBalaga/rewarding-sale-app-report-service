@@ -1,30 +1,33 @@
-import { body, matchedData, validationResult } from 'express-validator';
+import { matchedData, param, validationResult } from 'express-validator';
 import type { NextFunction, Request, Response } from 'express';
 import { httpCodes } from '../constants/http-status-code';
 import { ReportTypes } from '../DB/Models/report-types.enum';
 
-const newReport = () => {
+const reportPost = () => {
   return [
-    body('userId')
+    param('postId')
       .trim()
       .notEmpty()
       .escape()
-      .isString()
-      .withMessage('User ID is required'),
-    body('postId')
+      .isMongoId()
+      .withMessage('Post Id is required'),
+    param('reportType')
       .trim()
-      .escape()
       .notEmpty()
-      .isString()
-      .withMessage('Post ID is required'),
-    body('type')
-      .trim()
-      .escape()
-      .isString()
-      .notEmpty()
-      .withMessage('Report Type is required')
       .isIn(Object.values(ReportTypes))
-      .withMessage('Invalid report type'),
+      .withMessage('Report Type Must be a valid value')
+  ];
+};
+
+
+const postId = () => {
+  return [
+    param('postId')
+      .trim()
+      .notEmpty()
+      .escape()
+      .isMongoId()
+      .withMessage('Post Id is required'),
   ];
 };
 
@@ -42,4 +45,4 @@ const validateErrors = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-export { newReport, validateErrors };
+export { validateErrors, reportPost, postId };
