@@ -28,7 +28,10 @@ async function bootstrap() {
     'aws_sns_secret_access_key',
     'aws_region',
     'aws_sqs_queue_name',
-    'aws_sqs_queue_url'
+    'aws_sqs_queue_url',
+    'GOOGLE_MAPS_API_KEY',
+    'GOOGLE_MAPS_ROUTES_API_KEY',
+    'MAX_REPORT_DISTANCE'
   ];
 
   const missingVariables = requiredEnvVariables.filter(variable => {
