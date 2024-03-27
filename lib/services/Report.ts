@@ -7,6 +7,7 @@ import { PostStatus } from '../DB/Models/post-status.enum';
 import { LocationService } from './Location';
 import ReportModel from '../DB/Models/Report';
 import { ReportTypes } from '../DB/Models/report-types.enum';
+import { SNSService } from './SNS';
 
 
 class ReportService {
@@ -71,11 +72,14 @@ class ReportService {
       }
 
       // create the report for the post
-      await new ReportModel({
+      const newReport = await new ReportModel({
         postId: existingPost.id,
         userId: currentUser.id,
         type: reportType
       }).save();
+
+      // SNS Event
+      SNSService.newReport(newReport);
 
       return res.sendStatus(httpCodes.ok);
     } catch (error) {
