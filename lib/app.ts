@@ -26,6 +26,7 @@ async function bootstrap() {
     'aws_sqs_secret_access_key',
     'aws_sns_access_key_id',
     'aws_sns_secret_access_key',
+    'REPORT_TOPIC_SNS_ARN',
     'aws_region',
     'aws_sqs_queue_name',
     'aws_sqs_queue_url',

@@ -7,6 +7,7 @@ import { PostStatus } from '../DB/Models/post-status.enum';
 import { LocationService } from './Location';
 import ReportModel from '../DB/Models/Report';
 import { ReportTypes } from '../DB/Models/report-types.enum';
+import { SNSService } from './SNS';
 
 
 class ReportService {
@@ -19,21 +20,41 @@ class ReportService {
       });
 
       if (!existingPost) {
-        return  res.status(httpCodes.badRequest).send({
+        return res.status(httpCodes.badRequest).send({
           message: 'Post Does not exist / not published'
         });
       }
 
+      // TODO let user to confirm multiple times
       // check user has reported already
-      const existingReport = await ReportModel.findOne({
+      const existingReport = await ReportModel.find({
         postId: existingPost.id,
         userId: currentUser.id
       });
 
-      if (existingReport) {
+      if (existingReport.length >= 2) {
         return res.status(httpCodes.badRequest).send({
-          message: 'User has reported the post already'
+          message: 'User Cannot report more on this post'
         });
+      }
+
+      // If report is confirmation - let user to even negative reported already
+      if (existingReport.length) {
+        if (existingReport[0].type === ReportTypes.confirmation) {
+          // another confirmation is not allowed
+          if (reportType === ReportTypes.confirmation) {
+            return res.status(httpCodes.badRequest).send({
+              message: 'User has confirmed the Post already'
+            });
+          }
+        } else {
+          // Now user can only confirm the post
+          if (reportType !== ReportTypes.confirmation) {
+            return res.status(httpCodes.badRequest).send({
+              message: 'User Can only Confirm the post now'
+            });
+          }
+        }
       }
 
       const MAX_STORE_USER_DISTANCE = process.env.MAX_REPORT_DISTANCE || 500;
@@ -51,11 +72,14 @@ class ReportService {
       }
 
       // create the report for the post
-      await new ReportModel({
+      const newReport = await new ReportModel({
         postId: existingPost.id,
         userId: currentUser.id,
         type: reportType
       }).save();
+
+      // SNS Event
+      SNSService.newReport(newReport);
 
       return res.sendStatus(httpCodes.ok);
     } catch (error) {
@@ -74,7 +98,7 @@ class ReportService {
       });
 
       if (!existingPost) {
-        return  res.status(httpCodes.badRequest).send({
+        return res.status(httpCodes.badRequest).send({
           message: 'Post Does not exist / not published'
         });
       }
@@ -97,7 +121,7 @@ class ReportService {
     }
   }
 
-  public static async getUserPostReport(postId: mongoose.Types.ObjectId,  currentUser: IUser, res: Response) {
+  public static async getUserPostReport(postId: mongoose.Types.ObjectId, currentUser: IUser, res: Response) {
     try {
       // Only Published Post
       const existingPost = await PostModel.findOne({
@@ -106,19 +130,19 @@ class ReportService {
       });
 
       if (!existingPost) {
-        return  res.status(httpCodes.badRequest).send({
+        return res.status(httpCodes.badRequest).send({
           message: 'Post Does not exist / not published'
         });
       }
 
 
-      const userReport = await ReportModel.findOne({
+      const userReports = await ReportModel.find({
         postId: existingPost.id,
         userId: currentUser.id
       });
 
       return res.send({
-        reportType: userReport ? userReport.type : null
+        userReports: userReports.map(report => report.type)
       });
 
     } catch (error) {
