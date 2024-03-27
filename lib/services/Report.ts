@@ -105,6 +105,7 @@ class ReportService {
 
       const reportCountsPromises = Object.values(ReportTypes).map(async reportType => {
         const count = await ReportModel.countDocuments({
+          postId,
           type: reportType
         });
 
