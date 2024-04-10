@@ -77,7 +77,6 @@ class ReportService {
         userId: currentUser.id,
         type: reportType
       }).save();
-
       // SNS Event
       SNSService.newReport(newReport);
 
